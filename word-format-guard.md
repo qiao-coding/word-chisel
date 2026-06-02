@@ -39,8 +39,9 @@ Use "text segment" when showing output to the user. Use "run" only in internal r
 
 ## Phase 1: Scan — Build the Format Skeleton (INTERNAL)
 
-Call `read_docx` with `includeRunDetail: true` on paragraphs to be modified. Record the skeleton
-**internally — do not dump raw data to the user.** Summarize briefly: "Scanned paragraph 3,
+If the user hasn't specified paragraph numbers, call `list_paragraphs` first to identify targets.
+Then call `read_docx` with `includeRunDetail: true` on the paragraphs to be modified. Record the
+skeleton **internally — do not dump raw data to the user.** Summarize briefly: "Scanned paragraph 3,
 found 3 text segments — one bold, two plain."
 
 Internal format skeleton:
