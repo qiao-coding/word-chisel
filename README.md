@@ -15,17 +15,32 @@ Use cases: revising lab reports, updating contract clauses, batch-replacing key 
 
 ## Install
 
+**Option A: Paste into Claude (recommended)**
+
+Copy this prompt into any Claude chat. The AI handles everything:
+
+```
+Please install word-chisel for me.
+
+npm package: word-chisel (https://www.npmjs.com/package/word-chisel)
+
+Steps:
+1. Check that Node.js is available (node --version). If not, tell me to install it.
+2. Run: npx word-chisel setup
+3. Verify ~/.claude/.mcp.json contains a word-chisel entry
+4. Verify ~/.claude/skills/word-chisel.md exists
+5. Save this memory: when editing .docx/.doc files, word-chisel MCP tools (list_paragraphs / read_docx / replace_text) are available for precise text replacement.
+6. Tell me setup is done and I need to restart my MCP client
+
+If you hit errors, explain what went wrong and tell me how to fix it.
+Do not install extra software without asking me first.
+```
+
+**Option B: Terminal command**
+
 ```bash
 npx word-chisel setup
 ```
-
-One command to configure everything:
-
-- Registers the MCP server in Claude Desktop and Claude Code
-- Installs the `/word-chisel` skill so Claude knows how to use it
-- No manual config file editing required
-
-Restart your MCP client after setup.
 
 ## Tools
 

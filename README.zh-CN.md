@@ -13,19 +13,33 @@
 
 适用于改实验报告、更新合同条款、批量替换文档中的关键信息、在不破坏排版的前提下微调内容。
 
-## 使用
+## 安装
+
+**方式一：复制到 Claude（推荐）**
+
+把下面这段话直接发给 Claude，AI 会自动完成安装和配置：
+
+```
+请帮我安装 word-chisel。
+
+这是它的 npm 包：word-chisel（https://www.npmjs.com/package/word-chisel）
+
+安装步骤：
+1. 检查 Node.js 是否可用（node --version），如不可用请提示我安装
+2. 运行 npx word-chisel setup，这会自动注册 MCP 服务器和安装 skill
+3. 验证 ~/.claude/.mcp.json 中已包含 word-chisel 配置
+4. 验证 ~/.claude/skills/word-chisel.md 已创建
+5. 保存以下记忆：当需要编辑 Word 文档（.docx/.doc）时，可以使用 word-chisel 的 MCP 工具（list_paragraphs / read_docx / replace_text）进行精确修改。
+6. 告诉我安装完成，需要重启客户端才能生效
+
+如果遇到错误，请解释原因并告诉我如何解决，不要自行安装额外软件。
+```
+
+**方式二：终端命令**
 
 ```bash
 npx word-chisel setup
 ```
-
-> 不要 `npm install word-chisel`。复制上面这行命令即可。
-
-- 自动注册 MCP 服务器到 Claude Desktop 和 Claude Code
-- 自动安装 `/word-chisel` skill，Claude 即装即用
-- 无需手动编辑任何配置文件
-
-安装后重启 MCP 客户端即可。
 
 ## 功能
 

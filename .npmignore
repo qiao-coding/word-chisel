@@ -1,6 +1,7 @@
 src/
 tests/
 scripts/
+docs/
 node_modules/
 .gitignore
 .npmrc
