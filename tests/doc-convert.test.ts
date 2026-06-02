@@ -123,9 +123,10 @@ describe("prepareWorkingCopy — .doc files", () => {
 
     expect(result.wasConverted).toBe(true);
     expect(result.workingPath).toBe(docxPath);
-    expect(mockExecSync).toHaveBeenCalledTimes(1);
+    // Called 2x: soffice --version (PATH check) + soffice --convert-to docx
+    expect(mockExecSync).toHaveBeenCalledTimes(2);
 
-    const callArg = mockExecSync.mock.calls[0][0] as string;
+    const callArg = mockExecSync.mock.calls[1][0] as string;
     expect(callArg).toContain("soffice");
     expect(callArg).toContain("--headless");
     expect(callArg).toContain("--convert-to docx");

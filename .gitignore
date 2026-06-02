@@ -3,3 +3,4 @@ dist/
 *.tsbuildinfo
 tests/fixtures/*.doc
 tests/fixtures/*.docx
+.npmrc

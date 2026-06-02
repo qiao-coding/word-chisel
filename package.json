@@ -1,23 +1,20 @@
 {
   "name": "word-chisel",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for surgical text editing of .docx / .doc files — never touches originals | npx word-chisel setup",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "word-chisel": "./dist/index.js",
-    "word-chisel-setup": "./dist/cli/setup.js"
+    "word-chisel": "./dist/index.js"
   },
   "scripts": {
-    "postinstall": "echo '>>> word-chisel: Run \"npx word-chisel setup\" to install the MCP server + skill. Do NOT run this package directly.'",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "keywords": ["mcp", "mcp-server", "docx", "doc", "word", "document", "claude", "word-chisel"],
-  "preferGlobal": true,
+  "keywords": ["mcp", "mcp-server", "docx", "doc", "word", "document", "claude"],
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.0",

@@ -6,88 +6,40 @@ import { prepareWorkingCopy } from "./DocConverter.js";
 import type { ParsedDocx } from "./DocxReader.js";
 import type { FlatDocument, XmlNode, XmlTagObj } from "../types/index.js";
 
-interface CacheEntry {
-  doc: ParsedDocx;
-  flatDoc: FlatDocument;
-  outputPath: string;
-  note?: string;
-}
-
+interface CacheEntry { doc: ParsedDocx; flatDoc: FlatDocument; outputPath: string; note?: string; }
 const cache = new Map<string, CacheEntry>();
 
-export function getDocument(
-  filePath: string,
-  outputName?: string,
-): {
-  doc: ParsedDocx;
-  flatDoc: FlatDocument;
-  outputPath: string;
-  note?: string;
-} {
-  const absPath = filePath;
-
-  // Always resolve the working copy path first so we can validate cache against it
-  const { workingPath, wasConverted } = prepareWorkingCopy(absPath, outputName);
-
-  // Cache is keyed on the original path the user provided
-  const entry = cache.get(absPath);
+export function getDocument(filePath: string, outputName?: string): { doc: ParsedDocx; flatDoc: FlatDocument; outputPath: string; note?: string } {
+  const { workingPath, wasConverted } = prepareWorkingCopy(filePath, outputName);
+  const entry = cache.get(filePath);
   if (entry) {
-    try {
-      // Validate against the working copy's mtime, not the original
-      const currentMtime = statSync(workingPath).mtimeMs;
-      if (currentMtime <= entry.doc.mtimeMs) {
-        return {
-          doc: entry.doc,
-          flatDoc: entry.flatDoc,
-          outputPath: entry.outputPath,
-          note: entry.note,
-        };
-      }
-    } catch {
-      // Working file may have been deleted
-    }
-    cache.delete(absPath);
+    try { if (statSync(workingPath).mtimeMs <= entry.doc.mtimeMs) return { doc: entry.doc, flatDoc: entry.flatDoc, outputPath: entry.outputPath, note: entry.note }; }
+    catch {}
+    cache.delete(filePath);
   }
-
   const doc = readDocx(workingPath);
   const bodyElem = findBody(doc.tree);
   const flatDoc = flattenDocument(bodyElem);
-
   let note: string | undefined;
-  if (workingPath !== absPath) {
-    note = wasConverted
-      ? "This .doc file was copied and converted to .docx for editing. "
-      : "A working copy was created for editing. ";
-    note += `Original: ${absPath} (untouched). Editing: ${workingPath}`;
+  if (workingPath !== filePath) {
+    note = wasConverted ? "This .doc file was converted to .docx for editing. " : "A working copy was created for editing. ";
+    note += `Original: ${filePath} (untouched). Editing: ${workingPath}`;
   }
-
-  cache.set(absPath, { doc, flatDoc, outputPath: workingPath, note });
+  cache.set(filePath, { doc, flatDoc, outputPath: workingPath, note });
   return { doc, flatDoc, outputPath: workingPath, note };
 }
 
-export function invalidateCache(filePath: string): void {
-  cache.delete(filePath);
-}
+export const invalidateCache = (p: string) => { cache.delete(p); };
 
-export function updateCachedTree(
-  filePath: string,
-  newTree: XmlNode[],
-): void {
-  const entry = cache.get(filePath);
-  if (entry) {
-    entry.doc.tree = newTree;
-    const bodyElem = findBody(newTree);
-    entry.flatDoc = flattenDocument(bodyElem);
-  }
+export function updateCachedTree(filePath: string, newTree: XmlNode[]): void {
+  const e = cache.get(filePath);
+  if (e) { e.doc.tree = newTree; e.flatDoc = flattenDocument(findBody(newTree)); }
 }
 
 function findBody(tree: XmlNode[]): XmlTagObj {
   for (const node of tree) {
-    if (typeof node === "string") continue;
-    if (isElement(node) && tagName(node) === "w:document") {
-      const body = findChild(node, "w:body");
-      if (body) return body;
-    }
+    if (typeof node === "string" || !isElement(node)) continue;
+    if (tagName(node) === "w:document") { const b = findChild(node, "w:body"); if (b) return b; }
   }
   throw new Error("Could not find w:body in document XML");
 }
