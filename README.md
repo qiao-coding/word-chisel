@@ -22,15 +22,13 @@ Copy this prompt into any Claude chat. The AI handles everything:
 ```
 Please install word-chisel for me.
 
-npm package: word-chisel (https://www.npmjs.com/package/word-chisel)
-
 Steps:
 1. Check that Node.js is available (node --version). If not, tell me to install it.
 2. Run: npx word-chisel setup
 3. Verify ~/.claude/.mcp.json contains a word-chisel entry
 4. Verify ~/.claude/skills/word-chisel.md and ~/.claude/skills/word-format-guard.md exist
 5. Save this memory: when editing Word documents (.docx/.doc) with Claude, first read ~/.claude/skills/word-format-guard.md to scan the format skeleton, then read ~/.claude/skills/word-chisel.md and use the word-chisel MCP tools (list_paragraphs / read_docx / replace_text) for precise text editing.
-6. Tell me setup is done and I need to restart my MCP client
+6. Tell me setup is done and I need to restart Claude Desktop or Claude CLI
 
 If you hit errors, explain what went wrong and tell me how to fix it.
 Do not install extra software without asking me first.
@@ -90,18 +88,25 @@ Attempting to edit a `.doc` file without LibreOffice returns a clear `LIBREOFFIC
 
 ## Usage
 
-After setup, simply tell Claude:
+After setup, just talk to Claude naturally:
 
-```
-"Edit C:/docs/report.docx — change paragraph 3 from 'Q1 revenue grew 12%' to 'Q1 revenue grew 18%'"
-```
+**Single word replacement**
 
-Claude will automatically:
+> "Change 'Q1 revenue grew 12%' to 'Q1 revenue grew 18%' in paragraph 3 of C:/docs/report.docx"
 
-1. `list_paragraphs` — inspect the document structure
-2. `read_docx` — confirm the exact text
-3. `replace_text` — perform the surgical edit, preserving formatting
-4. Return the output file path
+**Global find-and-replace**
+
+> "Replace all 'Acme Corp' with 'GlobalTech Inc' in C:/docs/contract.docx"
+
+**Cross-format edit**
+
+> "In C:/docs/resume.docx paragraph 5, the company name is bold and the job title is italic — change company to 'Google' but keep the bold"
+
+**Rewrite a lab report section**
+
+> "Replace section 4 code in C:/docs/lab.docx with new Python code — keep the original font and indentation"
+
+Claude uses word-chisel tools to make precise edits without breaking formatting.
 
 ## Development
 

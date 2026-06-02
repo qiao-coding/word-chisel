@@ -22,15 +22,13 @@
 ```
 请帮我安装 word-chisel。
 
-这是它的 npm 包：word-chisel（https://www.npmjs.com/package/word-chisel）
-
 安装步骤：
 1. 检查 Node.js 是否可用（node --version），如不可用请提示我安装
 2. 运行 npx word-chisel setup，这会自动注册 MCP 服务器和安装 skill
 3. 验证 ~/.claude/.mcp.json 中已包含 word-chisel 配置
 4. 验证 ~/.claude/skills/word-chisel.md 和 ~/.claude/skills/word-format-guard.md 已创建
 5. 保存以下记忆：当使用 Claude 进行 Word 文档（.docx/.doc）编辑时，先阅读 ~/.claude/skills/word-format-guard.md 扫描格式骨架，再阅读 ~/.claude/skills/word-chisel.md，调用 word-chisel 的 MCP 工具（list_paragraphs / read_docx / replace_text）进行精确修改。
-6. 告诉我安装完成，需要重启客户端才能生效
+6. 告诉我安装完成，需要重启 Claude Desktop 或 Claude CLI 客户端才能生效
 
 如果遇到错误，请解释原因并告诉我如何解决，不要自行安装额外软件。
 ```
@@ -91,18 +89,25 @@ npx word-chisel setup
 
 ## 使用示例
 
-安装后，在 Claude 中直接说：
+安装后，直接用自然语言告诉 Claude：
 
-```
-"帮我把 C:/docs/实验报告.docx 第三段的'个人名片设计'改成'字典排序'"
-```
+**场景一：精准修改某个词**
 
-Claude 会自动：
+> "帮我把 C:/docs/实验报告.docx 第三段的'个人名片设计'改成'字典排序'"
 
-1. `list_paragraphs` — 查看文档结构
-2. `read_docx` — 确认精确文本
-3. `replace_text` — 精准替换，保留格式
-4. 返回输出文件路径
+**场景二：全文批量替换**
+
+> "把 C:/docs/合同.docx 里所有的'甲方有限公司'改为'甲方科技集团'"
+
+**场景三：跨格式边界修改**
+
+> "修改 C:/docs/简历.docx 第五段——前半段是加粗的公司名、后半段是普通字体的职位描述，把公司名改成'字节跳动'，保持原来的加粗不变"
+
+**场景四：更新实验报告内容**
+
+> "把 C:/docs/实验报告.docx 的'四、实验项目实现'部分的代码替换为新的 Python 代码，保留原有的字体和缩进格式"
+
+Claude 会自动使用 word-chisel 工具完成精确替换，不破坏原文格式。
 
 ## 开发
 
