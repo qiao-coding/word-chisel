@@ -25,7 +25,7 @@ Every tool response includes:
 All three tools accept an optional `outputName` parameter. **Before the first call, determine a meaningful output filename** based on the document's content:
 
 1. Start with `list_paragraphs` to understand the document's topic
-2. Derive a descriptive name (e.g., `2410180320萧明昊-字典元素的排序输出`)
+2. Derive a descriptive name (e.g., `xxx小明-字典元素的排序输出`)
 3. Pass it as `outputName` in the first tool call
 4. All subsequent calls for the same document use the same `outputName`
 
