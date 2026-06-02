@@ -13,6 +13,34 @@
 
 适用于改实验报告、更新合同条款、批量替换文档中的关键信息、在不破坏排版的前提下微调内容。
 
+## 快速开始
+
+将以下文本复制给claude cli里面
+```
+请帮我安装 word-chisel。
+
+安装步骤：
+1. 检查 Node.js 是否可用（node --version），如不可用请提示我安装
+2. 运行 npx word-chisel setup，这会自动注册 MCP 服务器和安装 skill
+3. 验证 ~/.claude/.mcp.json 中已包含 word-chisel 配置
+4. 验证 ~/.claude/skills/word-chisel.md 和 ~/.claude/skills/word-format-guard.md 已创建
+5. 保存以下记忆：当使用 Claude 进行 Word 文档（.docx/.doc）编辑时，先阅读 ~/.claude/skills/word-format-guard.md 扫描格式骨架，再阅读 ~/.claude/skills/word-chisel.md，调用 word-chisel 的 MCP 工具（list_paragraphs / read_docx / replace_text）进行精确修改。
+6. 告诉我安装完成，需要重启 Claude Desktop 或 Claude CLI 客户端才能生效
+
+如果遇到错误，请解释原因并告诉我如何解决，不要自行安装额外软件。
+```
+
+或者
+
+```bash
+npx word-chisel setup
+```
+
+
+安装完成后，可以直接对 Claude 描述需求：
+
+> "把 C:/docs/报告.docx“文件里的第三段的'旧文本'改成'新文本'
+
 ## 安装
 
 **方式一：复制到 Claude（推荐）**
