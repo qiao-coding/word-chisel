@@ -46,10 +46,10 @@ If you omit `outputName` on a later call, the tool creates a separate copy. Don'
 make separate `replace_text` calls, one per paragraph. Use `paragraphIndex` to target each one.
 
 ### 4. Match exact text from read_docx
-The `search` parameter must match the document text character-for-character. If word-format-guard
-already scanned the document in this session, use its skeleton text. Otherwise, call `read_docx`
-once to capture the exact text. Do NOT re-read before every replacement — only re-read if
-`matchCount: 0` indicates the text changed since your last snapshot.
+The `search` parameter must match the document text character-for-character. Call `read_docx`
+once per target paragraph to capture its exact text, or use the skeleton from word-format-guard
+if already scanned. Do NOT re-read before every replacement — only re-read a specific paragraph
+if `matchCount: 0` indicates its text changed since your last snapshot.
 
 ### 5. Always pass strategy explicitly
 `strategy` has a default (`firstRunFormatting`), but never rely on it. Always set `strategy`
@@ -68,8 +68,9 @@ target paragraphs, you may skip `list_paragraphs` and go directly to `read_docx`
 ### 8. Cross-paragraph replacement strategy
 When replacing text spanning multiple paragraphs (e.g. "replace sections 3 through 5"):
 replace the first paragraph's text with the new content, then clear subsequent paragraphs by using
-`search` = their full text and `replace` = `""`. This preserves paragraph structure but leaves empty
-paragraphs — inform the user that blank lines may appear where old content was cleared.
+`search` = their full text and `replace` = `""`. Clearing text leaves empty paragraphs (visible as
+blank lines) — the paragraph elements remain. word-chisel cannot delete paragraphs; it can only
+clear their content. Inform the user about resulting blank lines before proceeding.
 
 ## Workflow
 
@@ -87,18 +88,18 @@ numbers or format-guard has already identified targets.
 |-------|------|----------|-------------|
 | `path` | string | yes | Absolute path to .docx/.doc |
 | `includeEmpty` | boolean | no | Include empty paragraphs (default false) |
-| `outputName` | string | no | Custom name for output .docx (no extension) |
+| `outputName` | string | no | Custom name for output .docx (no extension). If omitted, auto-generates `<original>_edited.docx`. |
 
 ### `read_docx`
-Read full paragraph text with formatting details. Call once per session to capture exact text
-for building search strings. Do NOT re-read before every replacement.
+Read full paragraph text with formatting details. Call once per target paragraph to capture exact
+text for building search strings. Do NOT re-read before every replacement.
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
 | `path` | string | yes | Absolute path to .docx/.doc |
 | `paragraphs` | number[] | no | Specific paragraph indices (default: all) |
 | `includeRunDetail` | boolean | no | Show per-run formatting (default false) |
-| `outputName` | string | no | Custom name for output .docx |
+| `outputName` | string | no | Custom name for output .docx. If omitted, auto-generates `<original>_edited.docx`. |
 
 ### `replace_text`
 Surgical text replacement. Preserves all formatting. One paragraph per call.
@@ -108,8 +109,8 @@ Surgical text replacement. Preserves all formatting. One paragraph per call.
 | `path` | string | yes | Absolute path to .docx/.doc |
 | `search` | string | yes | Exact text to find |
 | `replace` | string | yes | New text to insert |
-| `paragraphIndex` | number | no | Target paragraph (default: all). `replaceAll` scopes within this paragraph only. |
-| `replaceAll` | boolean | no | When true: replace all matches. When false: replace first match only. Scope is limited to paragraphIndex if provided, otherwise entire document. |
+| `paragraphIndex` | number | no | Target a specific paragraph by index. Omit to search the entire document. |
+| `replaceAll` | boolean | no | When true: replace all matches. When false: replace first match only. If paragraphIndex is provided, scoped to that paragraph; otherwise applies to entire document. |
 | `strategy` | "firstRunFormatting" \| "distributeProportional" | no | Always pass explicitly. See Rule 5. |
 | `outputName` | string | no | Custom name for output .docx |
 

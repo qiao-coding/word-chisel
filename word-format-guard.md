@@ -70,8 +70,9 @@ Do NOT manually split the text. The tool distributes it automatically.
 ## Phase 3: Execute — Delegate to word-chisel
 
 Call `replace_text` one paragraph at a time. **Use the text from your Phase 1 skeleton as the
-`search` parameter.** Do not re-read before each replacement — the text has not changed.
-Only re-read if `matchCount: 0` indicates the text was already modified.
+`search` parameter.** Phase 1 captures each target paragraph once — do not re-read a paragraph
+before editing it. Only re-read a specific paragraph if `matchCount: 0` indicates its text
+changed since your snapshot.
 
 ```
 For each paragraph:
