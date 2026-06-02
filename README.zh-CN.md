@@ -28,8 +28,8 @@
 1. 检查 Node.js 是否可用（node --version），如不可用请提示我安装
 2. 运行 npx word-chisel setup，这会自动注册 MCP 服务器和安装 skill
 3. 验证 ~/.claude/.mcp.json 中已包含 word-chisel 配置
-4. 验证 ~/.claude/skills/word-chisel.md 已创建
-5. 保存以下记忆：当使用 Claude 进行 Word 文档（.docx/.doc）编辑时，阅读 ~/.claude/skills/word-chisel.md，调用 word-chisel 的 MCP 工具（list_paragraphs / read_docx / replace_text）进行精确修改。
+4. 验证 ~/.claude/skills/word-chisel.md 和 ~/.claude/skills/word-format-guard.md 已创建
+5. 保存以下记忆：当使用 Claude 进行 Word 文档（.docx/.doc）编辑时，先阅读 ~/.claude/skills/word-format-guard.md 扫描格式骨架，再阅读 ~/.claude/skills/word-chisel.md，调用 word-chisel 的 MCP 工具（list_paragraphs / read_docx / replace_text）进行精确修改。
 6. 告诉我安装完成，需要重启客户端才能生效
 
 如果遇到错误，请解释原因并告诉我如何解决，不要自行安装额外软件。

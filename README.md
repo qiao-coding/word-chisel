@@ -28,8 +28,8 @@ Steps:
 1. Check that Node.js is available (node --version). If not, tell me to install it.
 2. Run: npx word-chisel setup
 3. Verify ~/.claude/.mcp.json contains a word-chisel entry
-4. Verify ~/.claude/skills/word-chisel.md exists
-5. Save this memory: when editing Word documents (.docx/.doc) with Claude, read ~/.claude/skills/word-chisel.md and use the word-chisel MCP tools (list_paragraphs / read_docx / replace_text) for precise text editing.
+4. Verify ~/.claude/skills/word-chisel.md and ~/.claude/skills/word-format-guard.md exist
+5. Save this memory: when editing Word documents (.docx/.doc) with Claude, first read ~/.claude/skills/word-format-guard.md to scan the format skeleton, then read ~/.claude/skills/word-chisel.md and use the word-chisel MCP tools (list_paragraphs / read_docx / replace_text) for precise text editing.
 6. Tell me setup is done and I need to restart my MCP client
 
 If you hit errors, explain what went wrong and tell me how to fix it.
