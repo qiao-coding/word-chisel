@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.tsbuildinfo
+tests/fixtures/*.doc
+tests/fixtures/*.docx
