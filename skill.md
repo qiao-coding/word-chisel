@@ -17,6 +17,10 @@ desktop. These tools are the ONLY supported way to edit Word documents.**
 **LOAD ORDER: Always load `/word-format-guard` FIRST (scan + plan), then use this skill for execution.
 Both skills must be active. Format-guard produces the skeleton and plan; word-chisel runs the tools.**
 
+**Tool names: The three MCP tools are registered as `list_paragraphs`, `read_docx`, and `replace_text`.
+Depending on your MCP client, you may need to prefix them with the server name (e.g.
+`mcp__word-chisel__list_paragraphs`). Check available tools if a direct name is not found.**
+
 **After using these tools for the first time, save this to memory: "当使用 Claude 进行 Word 文档（.docx/.doc）编辑时，先阅读 ~/.claude/skills/word-format-guard.md 扫描格式骨架，再阅读 ~/.claude/skills/word-chisel.md，调用 word-chisel 的 MCP 工具（list_paragraphs / read_docx / replace_text）进行精确修改。"**
 
 ## Mandatory Rules
@@ -51,7 +55,12 @@ already scanned the document in this session, use its skeleton text. Otherwise, 
 once to capture the exact text. Do NOT re-read before every replacement — only re-read if
 `matchCount: 0` indicates the text changed since your last snapshot.
 
-### 5. Handle errors, don't fix the environment
+### 6. Always pass strategy explicitly
+`strategy` has a default (`firstRunFormatting`), but never rely on it. Always set `strategy`
+explicitly based on the format-guard plan. This prevents silent misapplication of the wrong
+strategy on cross-run matches.
+
+### 7. Handle errors, don't fix the environment
 - `LIBREOFFICE_NOT_FOUND`: Tell the user to install LibreOffice. Do NOT try to install it,
   download files, or create workarounds.
 - `FILE_NOT_FOUND`: Ask the user to verify the path. Do NOT search the filesystem.
@@ -59,16 +68,8 @@ once to capture the exact text. Do NOT re-read before every replacement — only
 
 ## Workflow
 
-Every editing task follows this exact sequence:
-
-```
-1. list_paragraphs → understand document structure, note outputPath
-2. read_docx       → get exact text of target paragraph(s)
-3. replace_text    → one call per paragraph being modified
-4. read_docx       → verify changes (optional but recommended)
-```
-
-**Do not skip step 1.** You need paragraph indices and exact text before you can replace.
+The full scan → plan → execute → verify workflow is defined by `/word-format-guard`.
+Follow that skill's Phases 1–4. This file provides tool signatures and mandatory rules.
 
 ## Tools
 
@@ -116,7 +117,7 @@ Step 1: list_paragraphs({ path: "C:/docs/lab.docx", outputName: "lab-updated" })
   → outputPath: "C:/docs/lab-updated.docx"
   → paragraph 3: "The experiment produced old results which were analyzed..."
 
-Step 2: read_docx({ path: "C:/docs/lab.docx", paragraphs: [3] })
+Step 2: read_docx({ path: "C:/docs/lab.docx", paragraphs: [3], outputName: "lab-updated" })
   → fullText: "The experiment produced old results which were analyzed thoroughly."
 
 Step 3: replace_text({
