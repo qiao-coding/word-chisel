@@ -9,7 +9,8 @@
   },
   "files": [
     "dist",
-    "skill.md"
+    "skill.md",
+    "word-format-guard.md"
   ],
   "scripts": {
     "build": "tsc",

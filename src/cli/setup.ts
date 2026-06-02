@@ -68,10 +68,10 @@ function installMcpServer(configPath: string, targetName: string): string {
   return configPath;
 }
 
-function installSkill(skillsDir: string, sourceSkillPath: string): string {
+function installSkill(skillsDir: string, name: string, sourcePath: string): string {
   mkdirSync(skillsDir, { recursive: true });
-  const dest = join(skillsDir, "word-chisel.md");
-  copyFileSync(sourceSkillPath, dest);
+  const dest = join(skillsDir, name);
+  copyFileSync(sourcePath, dest);
   return dest;
 }
 
@@ -115,17 +115,21 @@ function main() {
 
   const skillsDir = getSkillsDir();
   // skill.md is in the package root (two dirs up from dist/cli/setup.js)
-  const sourceSkill = join(__dirname, "..", "..", "skill.md");
+  const pkgRoot = join(__dirname, "..", "..");
 
-  if (!existsSync(sourceSkill)) {
-    console.log("  Skill file not found in package. Skipping skill install.");
-  } else {
+  for (const skillName of ["skill.md", "word-format-guard.md"]) {
+    const source = join(pkgRoot, skillName);
+    const destName = skillName === "skill.md" ? "word-chisel.md" : skillName;
+    if (!existsSync(source)) {
+      console.log(`  ${skillName} not found in package. Skipping.`);
+      continue;
+    }
     try {
-      const dest = installSkill(skillsDir, sourceSkill);
-      console.log(`  word-chisel skill installed`);
+      const dest = installSkill(skillsDir, destName, source);
+      console.log(`  ${destName} installed`);
       console.log(`    -> ${dest}`);
     } catch (e) {
-      console.log(`  Skill install failed - ${e instanceof Error ? e.message : String(e)}`);
+      console.log(`  ${skillName} install failed - ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
