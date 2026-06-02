@@ -1,12 +1,16 @@
 {
   "name": "word-chisel",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP server for surgical text editing of .docx / .doc files — never touches originals | npx word-chisel setup",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "word-chisel": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "skill.md"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",

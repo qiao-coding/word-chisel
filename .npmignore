@@ -1,0 +1,11 @@
+src/
+tests/
+scripts/
+node_modules/
+.gitignore
+.npmrc
+.npmignore
+tsconfig.json
+package-lock.json
+CONTRIBUTING.md
+*.tsbuildinfo
