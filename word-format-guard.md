@@ -1,112 +1,132 @@
 ---
 name: word-format-guard
 description: >
-  Companion skill for word-chisel. Before editing any Word document, scan and document its
-  format skeleton — fonts, sizes, styles, alignment, spacing, underlines, colors. Then create
-  an edit plan that preserves every formatting detail. Use whenever word-chisel is invoked
-  or when the user asks to edit a .docx/.doc file.
+  LOAD FIRST before any .docx/.doc editing. Scan the document's format skeleton, build an edit
+  plan, then delegate to word-chisel MCP tools for execution. This is the PRE-EDIT phase —
+  word-chisel handles the actual tool calls. Always loaded together with word-chisel.
 ---
 
 # Word Format Guard
 
-Companion to word-chisel. Ensures formatting is **never lost** during edits.
+**CRITICAL: This skill loads FIRST, before word-chisel. It handles Phase 1+2 (scan + plan).
+Word-chisel handles Phase 3+4 (execute + verify). Both skills must be active in the same session.
+Load order: word-format-guard → word-chisel.**
+
+Without format awareness, edits break underlines, bold/italic, fonts, colors, and page layout.
+This skill enforces **scan → plan → delegate → verify**.
+
+## Key Concept: `path` vs `outputName`
+
+These two parameters serve different roles. Never confuse them.
+
+| Parameter | Meaning | Changes across calls? | Example |
+|-----------|---------|----------------------|---------|
+| `path` | The **original file** (read-only reference) | **NEVER** — always the same path | `"C:/docs/report.docx"` |
+| `outputName` | Name for the working copy | **NEVER** — set once, reused everywhere | `"report-edited"` |
+
+Both are passed to every tool call. `path` never changes. `outputName` is set on the first call and reused identically.
+
+```
+All calls: path="C:/docs/report.docx"  outputName="report-edited"
+                                                ↑
+                                   same string in every call
+```
 
 ## Terminology
 
-In Word XML, a paragraph is made of **runs** — contiguous text with identical formatting. When presenting information to the user, use "text segment" or "format fragment". Use "run" only in internal reasoning and tool calls.
+In Word XML, a paragraph is made of **runs** — contiguous text with identical formatting.
+Use "text segment" when showing output to the user. Use "run" only in internal reasoning.
 
-## Why This Exists
+## Phase 1: Scan — Build the Format Skeleton (INTERNAL)
 
-Without format awareness, edits can break underlines, bold/italic boundaries, font sizes, colors, and page layout. This skill enforces a **scan → plan → execute → verify** workflow.
+Call `read_docx` with `includeRunDetail: true` on paragraphs to be modified. Record the skeleton
+**internally — do not dump raw data to the user.** Summarize briefly: "Scanned paragraph 3,
+found 3 text segments — one bold, two plain."
 
-## Critical: Session Consistency
-
-**Pass the same `outputName` through every phase.** The first call to `list_paragraphs` or `read_docx` sets the working copy name. Every subsequent call — `read_docx`, `replace_text`, verification reads — must use the identical `outputName`. If you omit it, the tool creates a separate copy, fragmenting your edits across multiple files.
-
+Internal format skeleton:
 ```
-Phase 1: list_paragraphs({ path: "C:/doc.docx", outputName: "my-edit" })
-Phase 2: read_docx({ path: "C:/doc.docx", outputName: "my-edit", ... })
-Phase 3: replace_text({ path: "C:/doc.docx", outputName: "my-edit", ... })
-Phase 4: read_docx({ path: "C:/doc.docx", outputName: "my-edit", ... })
-```
-
-## Phase 1: Scan — Build the Format Skeleton
-
-Call `read_docx` with `includeRunDetail: true` on all paragraphs to be modified. Build a format skeleton:
-
-```
-Paragraph [3]:
-  fullText: "..."
-  style: "BodyText"
-  segments:
-    [0] "The Q1 revenue was "       Calibri 11pt  — plain
-    [1] "$12.5 million"             Calibri 11pt  BOLD, color:#0070C0
-    [2] " which exceeded targets."  Calibri 11pt  — plain
+Para [3] style="BodyText"
+  [0] "The Q1 revenue was "       Calibri 11pt  plain
+  [1] "$12.5 million"             Calibri 11pt  BOLD, color:#0070C0
+  [2] " which exceeded targets."  Calibri 11pt  plain
 ```
 
-Also note from `list_paragraphs`: paragraph style, heading level, position in document.
+The skeleton is your **source of truth for search strings** in Phase 3.
 
-## Phase 2: Plan — Choose Strategy Per Match
+## Phase 2: Plan — Choose Strategy
 
-Based on the skeleton, map each edit to a strategy. **You only decide the strategy — the tool handles the math.**
+Based on the skeleton, determine the strategy. **You only decide — the tool handles the math.**
 
-| Scenario | Strategy | Why |
-|----------|----------|-----|
-| Match is entirely within ONE segment | `firstRunFormatting` | Formatting auto-preserved, no decision needed |
-| Match spans MULTIPLE segments, want unified result | `firstRunFormatting` | All replacement text inherits first segment's style |
-| Match spans MULTIPLE segments, must keep mixed formatting | `distributeProportional` | Tool auto-splits replacement proportionally; each segment keeps its style |
+| Scenario | Strategy |
+|----------|----------|
+| Match within ONE segment | `firstRunFormatting` — formatting auto-preserved |
+| Cross-segment, want unified look | `firstRunFormatting` — inherits first segment's style |
+| Cross-segment, must keep mixed formatting | `distributeProportional` — tool auto-splits replacement |
 
-**Important**: when using `distributeProportional`, do NOT manually split the replacement text. Pass the complete `search` and `replace` strings. The `replace_text` tool automatically distributes the replacement proportionally across matched runs.
+When using `distributeProportional`: pass the complete `search` and `replace` strings.
+Do NOT manually split the text. The tool distributes it automatically.
 
-## Phase 3: Execute — One Paragraph at a Time
+## Phase 3: Execute — Delegate to word-chisel
 
-Use the exact text from Phase 1/2 to construct your `search` parameter. **Do not re-read the paragraph before every replacement** — the text has not changed yet. Only re-read if a previous replacement returned `matchCount: 0`, indicating the text no longer matches.
+Call `replace_text` one paragraph at a time. **Use the text from your Phase 1 skeleton as the
+`search` parameter.** Do not re-read before each replacement — the text has not changed.
+Only re-read if `matchCount: 0` indicates the text was already modified.
 
 ```
-For each paragraph in the plan:
-  1. Use the search text from your format skeleton
-  2. Call replace_text({ paragraphIndex: N, search: "...", replace: "...", strategy: "...", outputName: "..." })
-  3. If matchCount: 0 — re-read that paragraph and retry with corrected search text
-  4. If matchCount > 0 — move to next paragraph
+For each paragraph:
+  1. search = exact text from Phase 1 skeleton
+  2. Call replace_text({ path, outputName, paragraphIndex: N, search, replace, strategy })
+  3. matchCount > 0 → next paragraph
+  4. matchCount: 0 → re-read paragraph, update search text, retry
 ```
 
-**One paragraph per call.** Never combine multiple paragraph indices into a batch.
+**One paragraph per call.** Never batch multiple indices.
 
-## Phase 4: Verify — Compare Against Skeleton
+## Phase 4: Verify
 
-After all edits complete, re-read modified paragraphs with `includeRunDetail: true`. Compare:
-
-- Bold/italic/underline match the skeleton?
-- Font names and sizes unchanged?
-- Colors preserved?
-- Paragraph style still matches?
-
-Report any formatting loss to the user immediately.
+Re-read modified paragraphs with `includeRunDetail: true`. Compare against skeleton:
+bold/italic/underline, font names, sizes, colors, paragraph style. Report any loss to the user.
 
 ## Common Pitfalls
 
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| Underline disappears | Cross-run match collapsed into non-underlined run | Use `distributeProportional` |
-| Bold spreads everywhere | `firstRunFormatting` on bold-first match | Use `distributeProportional` |
-| Page layout shifts | Replacing heading paragraph with body text | Only replace text within runs; paragraph style is preserved |
-| Alignment breaks | Modifying paragraph properties | Only target `fullText` content |
-| Font changes unexpectedly | Wrong run's formatting applied | Check skeleton — verify target run |
-| Multiple output files created | outputName not passed consistently | Use identical outputName in ALL calls |
+| Problem | Fix |
+|---------|-----|
+| Underline disappears | Use `distributeProportional` for cross-run matches |
+| Bold spreads to entire paragraph | Same — `distributeProportional` keeps boundary |
+| Page layout shifts | Only replace text; paragraph style is preserved by the tool |
+| Multiple copies created | Pass identical `outputName` in every call |
+| matchCount: 0 | Re-read paragraph, update search text from latest read |
+| Wrong path | `path` = original file (NEVER changes), `outputName` = copy name |
+
+## Environment Notes
+
+- **Local paths** (Windows/macOS/Linux): Absolute paths like `C:/docs/file.docx` or `/home/user/file.docx`
+- **Claude.ai / web uploads**: Files uploaded to Claude chat may have paths like `/mnt/user-data/...` — these work the same way
+- **Network drives**: UNC paths (`\\server\share\file.docx`) are supported if the OS can access them
+- **LibreOffice for .doc files**: Must be installed on the same machine running the MCP server
 
 ## Example
 
-User: "Update paragraph 5 of the report"
-
 ```
-FORMAT SKELETON — Paragraph 5:
-  style: "BodyText"
-  Segment [0]: "The Q1 revenue was "       Calibri 11pt  plain
-  Segment [1]: "$12.5 million"             Calibri 11pt  BOLD, color:#0070C0
-  Segment [2]: " which exceeded targets."  Calibri 11pt  plain
+User: "Update paragraph 5 — change $12.5M to $18.3M"
 
-EDIT PLAN:
-  Target: "$12.5 million" → "$18.3 million"
-  Scope: single segment (Segment [1])
-  Strategy: firstRunFormatting (formatting auto-preserved)
+SCAN (internal):
+  Para [5] style="BodyText"
+    [0] "The Q1 revenue was "       Calibri 11pt  plain
+    [1] "$12.5 million"             Calibri 11pt  BOLD, blue
+    [2] " which exceeded targets."  Calibri 11pt  plain
+
+PLAN:
+  search: "$12.5 million"  replace: "$18.3 million"
+  Strategy: firstRunFormatting (single segment)
+
+EXECUTE:
+  replace_text({ path: "C:/docs/report.docx", outputName: "report-q1",
+                 paragraphIndex: 5, search: "$12.5 million",
+                 replace: "$18.3 million", strategy: "firstRunFormatting" })
+
+VERIFY:
+  read_docx({ path: "C:/docs/report.docx", outputName: "report-q1",
+              paragraphs: [5], includeRunDetail: true })
+  → Bold and blue color preserved on new value ✓
 ```

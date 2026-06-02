@@ -1,6 +1,6 @@
 {
   "name": "word-chisel",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "MCP server for surgical text editing of .docx / .doc files — never touches originals | npx word-chisel setup",
   "type": "module",
   "main": "dist/index.js",
