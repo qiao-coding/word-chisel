@@ -4,7 +4,7 @@ import { replaceInParagraph } from "../dist/docx/TextReplacer.js";
 import { saveDocx } from "../dist/docx/DocxWriter.js";
 import { childrenOf, isElement, tagName, findChild } from "../dist/docx/XmlUtils.js";
 
-const PATH = "C:/Users/32890/Desktop/2410180320萧明昊-个人名片设计-美好愿景 (1).docx";
+const PATH = process.argv[2] || "./test.docx";
 
 // Invalidate any cached data from first batch
 invalidateCache(PATH);

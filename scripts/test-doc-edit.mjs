@@ -4,8 +4,8 @@ import { replaceInParagraph } from "../dist/docx/TextReplacer.js";
 import { saveDocx } from "../dist/docx/DocxWriter.js";
 import { childrenOf, isElement, tagName, findChild } from "../dist/docx/XmlUtils.js";
 
-const PATH = "C:/Users/32890/Desktop/2410180320萧明昊-个人名片设计-美好愿景 (1).doc";
-const OUTPUT_NAME = "2410180320萧明昊-字典元素的排序输出";
+const PATH = process.argv[2] || "./test.doc";
+const OUTPUT_NAME = process.argv[3] || "edited-output";
 
 // Read .doc → auto-converts to .docx via LibreOffice
 console.log("Opening .doc file (converting to .docx)...");
@@ -46,7 +46,7 @@ function replace(idx, search, replacement) {
 // 1. Project name
 console.log("\n--- Header ---");
 replace(26, flatDoc.paragraphs.find(p => p.index === 26).fullText,
-  "项目名称：字典元素的排序输出                指导教师：韦兰飞");
+  "项目名称：字典元素的排序输出                指导教师：张老师");
 
 // 2. Type checkboxes
 replace(23, flatDoc.paragraphs.find(p => p.index === 23).fullText,
