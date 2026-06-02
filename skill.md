@@ -66,9 +66,10 @@ target paragraphs, you may skip `list_paragraphs` and go directly to `read_docx`
 - `matchCount: 0`: Re-read the paragraph text and try again with the exact text.
 
 ### 8. Cross-paragraph replacement strategy
-When the user asks to replace text spanning multiple paragraphs (e.g. "replace sections 3 through 5"):
+When replacing text spanning multiple paragraphs (e.g. "replace sections 3 through 5"):
 replace the first paragraph's text with the new content, then clear subsequent paragraphs by using
-`search` = their full text and `replace` = `""`. This preserves paragraph structure and styling.
+`search` = their full text and `replace` = `""`. This preserves paragraph structure but leaves empty
+paragraphs — inform the user that blank lines may appear where old content was cleared.
 
 ## Workflow
 
@@ -108,7 +109,7 @@ Surgical text replacement. Preserves all formatting. One paragraph per call.
 | `search` | string | yes | Exact text to find |
 | `replace` | string | yes | New text to insert |
 | `paragraphIndex` | number | no | Target paragraph (default: all). `replaceAll` scopes within this paragraph only. |
-| `replaceAll` | boolean | no | Replace all matches within the specified paragraphIndex (or entire document if index omitted). |
+| `replaceAll` | boolean | no | When true: replace all matches. When false: replace first match only. Scope is limited to paragraphIndex if provided, otherwise entire document. |
 | `strategy` | "firstRunFormatting" \| "distributeProportional" | no | Always pass explicitly. See Rule 5. |
 | `outputName` | string | no | Custom name for output .docx |
 

@@ -111,8 +111,12 @@ bold/italic/underline, font names, sizes, colors, paragraph style. Report any lo
 ```
 User: "Update paragraph 5 — change $12.5M to $18.3M"
 
-SCAN (internal):
-  Para [5] style="BodyText"
+SCAN:
+  (User specified paragraph 5 — skip list_paragraphs per word-chisel Rule 6)
+  read_docx({ path: "C:/docs/report.docx", paragraphs: [5], outputName: "report-q1", includeRunDetail: true })
+
+  Internal skeleton:
+    Para [5] style="BodyText"
     [0] "The Q1 revenue was "       Calibri 11pt  plain
     [1] "$12.5 million"             Calibri 11pt  BOLD, blue
     [2] " which exceeded targets."  Calibri 11pt  plain
